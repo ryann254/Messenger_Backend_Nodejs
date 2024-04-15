@@ -1,6 +1,6 @@
-import mongoose, { Mongoose } from 'mongoose';
+import mongoose, { Mongoose, Types } from 'mongoose';
 
-const ConversationSchema = new mongoose.Schema({
+const ConversationSchema = new mongoose.Schema<IConversation>({
   name: {
     type: String,
     required: true,
@@ -14,5 +14,13 @@ const ConversationSchema = new mongoose.Schema({
   ],
 });
 
-const Conversation = mongoose.model('Conversation', ConversationSchema);
+export interface IConversation {
+  name: string;
+  messages?: Types.DocumentArray<mongoose.Types.ObjectId>;
+}
+
+const Conversation = mongoose.model<IConversation>(
+  'Conversation',
+  ConversationSchema
+);
 export default Conversation;
