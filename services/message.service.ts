@@ -2,7 +2,7 @@ import Message from '../mongodb/models/message';
 import { createConversation } from './conversation.service';
 
 export const createMessage = async ({ recipient, ...params }, user) => {
-  let conversation = await createConversation(recipient);
+  let conversation = await createConversation({ name: recipient });
   if (!conversation)
     throw new Error("Something went wrong. We couldn't create a conversation.");
 

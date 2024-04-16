@@ -6,4 +6,6 @@ import Conversation, { IConversation } from '../mongodb/models/conversation';
  * @returns a Promise<any>(for now)
  * **/
 export const createConversation = async (conversationBody: IConversation) =>
-  Conversation.create(conversationBody);
+  Conversation.create({
+    name: conversationBody.name,
+  });

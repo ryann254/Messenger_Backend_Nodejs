@@ -13,7 +13,7 @@ const server = createServer(app);
 const io = new Server(server);
 
 const mongoClient = new MongoClient(process.env.MONGODB_URI || '');
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const main = async () => {
   await mongoClient.connect();
