@@ -1,39 +1,95 @@
-import express from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
+import { createAdapter } from '@socket.io/mongo-adapter';
+import { Server } from 'socket.io';
+import { createServer } from 'http';
+import { Emitter } from '@socket.io/mongo-emitter';
 import dotenv from 'dotenv';
 
-import main from './socket';
-import routes from './routes';
+import app from './app';
 import mongoose from 'mongoose';
+import Message from './mongodb/models/message';
 
 dotenv.config();
 
-const app = express();
+const PORT = process.env.PORT || 4500;
 
-const PORT = process.env.PORT || 3018;
-
-// Set security HTTP headers
-app.use(helmet());
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-
-// Parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
-
-app.get('/', (req, res) => {
-  res.send('Hello from the server!');
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+  },
 });
 
-// Handle routes
-app.use('/api/v1', routes);
+const mongooseConnect = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI || '');
+    console.log('Connected to MongoDB');
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Error connecting to MongoDB', error);
+  }
+};
 
-// main().catch((err) => console.error(err));
-mongoose.connect(process.env.MONGODB_URI || '').then(() => {
-  console.log('Connected to MongoDB');
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+const main = async () => {
+  await mongooseConnect();
+  // Access the MongoDB collection directly to pass it to `createAdapter()` & `Emitter()`
+  const db = mongoose.connection.db;
+  const messagesCollection = db.collection('messages');
+
+  // Filter out all internal operations performed by Mongodb's adapter
+  const pipeline = [
+    {
+      $match: {
+        operationType: { $in: ['insert', 'update', 'delete'] },
+        $expr: {
+          $and: [
+            { $ne: ['$fullDocument.type', 2] }, // Exclude documents with 'type: 2'
+            { $ne: ['$fullDocument.nsp', '/'] }, // Exclude documents with 'nsp: /'
+          ],
+        },
+      },
+    },
+  ];
+
+  // Set up MongoDB change streams
+  const changeStream = Message.watch(pipeline);
+
+  // Set up MongoDB adapter for Socket.io => Enables the broadcasting of messages across multiple Socket.IO server instances using MongoDB as the message broker.
+  io.adapter(
+    createAdapter(messagesCollection, {
+      addCreatedAtField: true,
+    })
+  );
+
+  // Set up an emitter for broadcasting changes
+  const emitter = new Emitter(messagesCollection);
+
+  // Listen for changes in the MongoDB collection
+  changeStream.on('change', (change) => {
+    console.log('Change Detected: ', change);
+    // Emit the change to all connected clients
+    emitter.emit('change', change);
   });
-});
 
-export default app;
+  io.on('connection', (socket) => {
+    // Broadcast that a user is online
+    console.log('a user connected');
+    // Update the current user's online status
+
+    // Get chatrooms associated with the current user(rooms with messages)
+    // Catch all listener for debugging
+    // Listen for the `change` event emitted by the server
+    socket.on('change', (msg) => {
+      console.log('Message Received: ', msg);
+      socket.broadcast.emit('message', msg);
+    });
+
+    // Handle disconnection
+    // Update the current user's online status
+    socket.on('disconnect', () => {
+      console.log('user disconnected');
+    });
+  });
+};
+main();
