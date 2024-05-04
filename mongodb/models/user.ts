@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 const UserSchema = new mongoose.Schema<IUser>(
   {
@@ -54,15 +54,6 @@ const UserSchema = new mongoose.Schema<IUser>(
   }
 );
 
-export interface IUser {
-  username: string;
-  email: string;
-  password?: string;
-  online: boolean;
-  lastActive: Date;
-  conversation: mongoose.Types.ObjectId;
-}
-
 /**
  * Check if email is taken
  * @param {string} email - The user's email
@@ -86,5 +77,22 @@ UserSchema.pre('save', function (next) {
   next();
 });
 
-const User = mongoose.model('User', UserSchema);
+const User = mongoose.model<IUser, IUserModel>('User', UserSchema);
+
 export default User;
+
+export interface IUser {
+  username: string;
+  email: string;
+  password?: string;
+  online: boolean;
+  lastActive: Date;
+  conversation?: mongoose.Types.ObjectId;
+}
+
+export interface IUserModel extends Model<IUser> {
+  isEmailTaken(
+    email: string,
+    excludeUserId?: mongoose.Types.ObjectId
+  ): Promise<boolean>;
+}

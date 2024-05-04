@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
+import { createUser } from '../services/user.service';
 
 export const createUserController = async (req: Request, res: Response) => {
   const user = await createUser(req.body);

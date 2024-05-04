@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 
 const MessageSchema = new mongoose.Schema<IMessage>(
   {
-    // TODO: Change this to reference a real user.
     sender: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
     text: {
@@ -30,7 +30,7 @@ const MessageSchema = new mongoose.Schema<IMessage>(
 );
 
 export interface IMessage {
-  sender: string;
+  sender: mongoose.Schema.Types.ObjectId;
   text: string;
   media_url?: string;
   sent: boolean;
