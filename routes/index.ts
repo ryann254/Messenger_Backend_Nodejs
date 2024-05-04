@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
 import messageRoute from './message.route';
+import userRoute from './user.route';
 
 const router = express.Router();
 
@@ -12,6 +13,10 @@ const defaultIRoute: IRoute[] = [
   {
     path: '/message',
     route: messageRoute,
+  },
+  {
+    path: '/user',
+    route: userRoute,
   },
 ];
 

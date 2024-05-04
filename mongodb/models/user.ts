@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema(
+const UserSchema = new mongoose.Schema<IUser>(
   {
     username: {
       type: String,
@@ -51,6 +51,32 @@ const UserSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+  }
+);
+
+export interface IUser {
+  username: string;
+  email: string;
+  password?: string;
+  online: boolean;
+  lastActive: Date;
+  conversation: mongoose.Types.ObjectId;
+}
+
+/**
+ * Check if email is taken
+ * @param {string} email - The user's email
+ * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
+ * @returns {Promise<boolean>}
+ */
+UserSchema.static(
+  'isEmailTaken',
+  async function (
+    email: string,
+    excludeUserId: mongoose.Types.ObjectId
+  ): Promise<boolean> {
+    const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+    return !!user;
   }
 );
 

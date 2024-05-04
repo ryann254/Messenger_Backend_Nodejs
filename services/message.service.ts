@@ -1,8 +1,12 @@
+import { Types } from 'mongoose';
 import Message from '../mongodb/models/message';
 import { createConversation } from './conversation.service';
 
 export const createMessage = async ({ recipient, ...params }, user) => {
-  let conversation = await createConversation({ name: recipient });
+  let conversation = await createConversation({
+    name: recipient,
+    members: [user.id, recipient] as Types.DocumentArray<Types.ObjectId>,
+  });
   if (!conversation)
     throw new Error("Something went wrong. We couldn't create a conversation.");
 

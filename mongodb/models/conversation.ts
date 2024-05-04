@@ -12,11 +12,22 @@ const ConversationSchema = new mongoose.Schema<IConversation>({
       ref: 'Message',
     },
   ],
+  members: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        trim: true,
+      },
+    ],
+    index: true,
+  },
 });
 
 export interface IConversation {
   name: string;
   messages?: Types.DocumentArray<mongoose.Types.ObjectId>;
+  members: Types.DocumentArray<mongoose.Types.ObjectId>;
 }
 
 const Conversation = mongoose.model<IConversation>(

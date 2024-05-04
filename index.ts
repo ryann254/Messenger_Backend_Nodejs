@@ -67,7 +67,9 @@ const main = async () => {
 
   // Listen for changes in the MongoDB collection
   changeStream.on('change', (change) => {
-    console.log('Change Detected: ', change);
+    // Get chatrooms associated with the current user(rooms with messages)
+    // Catch all listener for debugging
+    // Listen for the `change` event emitted by the server
     // Emit the change to all connected clients
     emitter.emit('change', change);
   });
@@ -76,14 +78,6 @@ const main = async () => {
     // Broadcast that a user is online
     console.log('a user connected');
     // Update the current user's online status
-
-    // Get chatrooms associated with the current user(rooms with messages)
-    // Catch all listener for debugging
-    // Listen for the `change` event emitted by the server
-    socket.on('change', (msg) => {
-      console.log('Message Received: ', msg);
-      socket.broadcast.emit('message', msg);
-    });
 
     // Handle disconnection
     // Update the current user's online status

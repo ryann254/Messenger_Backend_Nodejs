@@ -8,4 +8,5 @@ import Conversation, { IConversation } from '../mongodb/models/conversation';
 export const createConversation = async (conversationBody: IConversation) =>
   Conversation.create({
     name: conversationBody.name,
+    members: conversationBody.members,
   });
