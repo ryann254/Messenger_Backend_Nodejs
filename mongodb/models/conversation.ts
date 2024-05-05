@@ -1,6 +1,7 @@
+import { Document } from 'mongodb';
 import mongoose, { Mongoose, Types } from 'mongoose';
 
-const ConversationSchema = new mongoose.Schema<IConversation>({
+const ConversationSchema = new mongoose.Schema<IConversationDoc>({
   name: {
     type: String,
     required: true,
@@ -30,7 +31,9 @@ export interface IConversation {
   members: Types.DocumentArray<mongoose.Types.ObjectId>;
 }
 
-const Conversation = mongoose.model<IConversation>(
+export interface IConversationDoc extends IConversation, Document {}
+
+const Conversation = mongoose.model<IConversationDoc>(
   'Conversation',
   ConversationSchema
 );

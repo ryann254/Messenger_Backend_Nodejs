@@ -1,6 +1,7 @@
+import { Document } from 'mongodb';
 import mongoose from 'mongoose';
 
-const MessageSchema = new mongoose.Schema<IMessage>(
+const MessageSchema = new mongoose.Schema<IMessageDoc>(
   {
     sender: {
       type: mongoose.Schema.Types.ObjectId,
@@ -37,6 +38,8 @@ export interface IMessage {
   conversation: mongoose.Schema.Types.ObjectId;
 }
 
-const Message = mongoose.model<IMessage>('Message', MessageSchema);
+export interface IMessageDoc extends IMessage, Document {}
+
+const Message = mongoose.model<IMessageDoc>('Message', MessageSchema);
 
 export default Message;
