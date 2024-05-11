@@ -76,12 +76,10 @@ const main = async () => {
   // Listen for changes in the MongoDB collection
   changeStream.on('change', (change) => {
     // Listen for the `change` event emitted by the server
-    // Extract the text message from the change event document
-    const {
-      fullDocument: { conversation, text },
-    } = change;
-    // Emit the text to all connected clients
-    emitter.emit('change', conversation, text);
+    // Extract the fullDocument from the change event document
+    const { fullDocument } = change;
+    // Emit the fullDocument to all connected clients
+    emitter.emit('messageToRoom', fullDocument);
   });
 
   io.on('connection', async (socket) => {
