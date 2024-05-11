@@ -1,5 +1,7 @@
 import { Document } from 'mongodb';
 import mongoose, { Mongoose, Types } from 'mongoose';
+import { IUserDoc } from './user';
+import { IMessageDoc } from './message';
 
 const ConversationSchema = new mongoose.Schema<IConversationDoc>({
   name: {
@@ -32,6 +34,11 @@ export interface IConversation {
 }
 
 export interface IConversationDoc extends IConversation, Document {}
+
+export type IConversationPopulated = IConversationDoc & {
+  messages: Types.DocumentArray<IMessageDoc>;
+  members: Types.DocumentArray<IUserDoc>;
+};
 
 const Conversation = mongoose.model<IConversationDoc>(
   'Conversation',

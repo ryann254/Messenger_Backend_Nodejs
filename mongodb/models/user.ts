@@ -1,6 +1,7 @@
+import { Document } from 'mongodb';
 import mongoose, { Model } from 'mongoose';
 
-const UserSchema = new mongoose.Schema<IUser>(
+const UserSchema = new mongoose.Schema<IUserDoc, IUserModel>(
   {
     username: {
       type: String,
@@ -77,7 +78,7 @@ UserSchema.pre('save', function (next) {
   next();
 });
 
-const User = mongoose.model<IUser, IUserModel>('User', UserSchema);
+const User = mongoose.model<IUserDoc, IUserModel>('User', UserSchema);
 
 export default User;
 
@@ -96,3 +97,5 @@ export interface IUserModel extends Model<IUser> {
     excludeUserId?: mongoose.Types.ObjectId
   ): Promise<boolean>;
 }
+
+export interface IUserDoc extends IUser, Document {}

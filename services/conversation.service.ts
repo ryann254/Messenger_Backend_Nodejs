@@ -2,7 +2,9 @@ import mongoose from 'mongoose';
 import Conversation, {
   IConversation,
   IConversationDoc,
+  IConversationPopulated,
 } from '../mongodb/models/conversation';
+import { IUserDoc } from '../mongodb/models/user';
 
 /**
  * Create a conversation
@@ -35,3 +37,24 @@ export const getConversation = async (
       ],
     },
   });
+
+/**
+ * Get the messages for every room that a user is in.
+ * @param user logged in user
+ * @returns messages of the logged in user fro every room where they are members
+ */
+export const queryConversations = async (
+  userId: string
+): Promise<IConversationPopulated[]> =>
+  Conversation.find({
+    members: { $in: [new mongoose.Types.ObjectId(userId)] },
+  })
+    .populate('messages')
+    .populate({
+      path: 'members',
+      match: {
+        _id: {
+          $ne: new mongoose.Types.ObjectId(userId),
+        },
+      },
+    });
