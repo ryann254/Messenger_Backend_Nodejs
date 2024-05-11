@@ -8,6 +8,7 @@ import app from './app';
 import mongoose from 'mongoose';
 import Message from './mongodb/models/message';
 import { queryConversations } from './services/conversation.service';
+import Conversation from './mongodb/models/conversation';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ const server = createServer(app);
 const io = new Server(server, {
   connectionStateRecovery: {},
   pingTimeout: 60000,
+  allowEIO3: true,
   cors: {
     origin: process.env.CLIENT_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -100,11 +102,23 @@ const main = async () => {
       console.log(event, args);
     });
 
-    const transport = socket.conn.transport.name; // in most cases, "polling"
-
-    socket.conn.on('upgrade', () => {
-      const upgradedTransport = socket.conn.transport.name; // in most cases, "websocket"
-    });
+    // Refetch and resend rooms to the frontend in the case of a disconnection.
+    if (!socket.recovered) {
+      try {
+        const conversationsWithMessages = await Conversation.find({})
+          .populate('messages')
+          .populate('members')
+          .sort({ _id: -1 })
+          .skip(socket.handshake.auth.serverOffset || 0)
+          .limit(10);
+        socket.emit('conversations', conversationsWithMessages);
+      } catch (error) {
+        console.error(
+          'Error fetching conversations for disconnected users',
+          error
+        );
+      }
+    }
 
     // Handle disconnection
     // Update the current user's online status
