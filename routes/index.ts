@@ -1,6 +1,7 @@
 import express, { Router } from 'express';
 import messageRoute from './message.route';
 import userRoute from './user.route';
+import conversationRoute from './conversation.route';
 
 const router = express.Router();
 
@@ -17,6 +18,10 @@ const defaultIRoute: IRoute[] = [
   {
     path: '/user',
     route: userRoute,
+  },
+  {
+    path: '/conversation',
+    route: conversationRoute,
   },
 ];
 

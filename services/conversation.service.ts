@@ -41,7 +41,7 @@ export const getConversation = async (
 /**
  * Get the messages for every room that a user is in.
  * @param user logged in user
- * @returns messages of the logged in user fro every room where they are members
+ * @returns messages of the logged in user for every room where they are members
  */
 export const queryConversations = async (
   userId: string
