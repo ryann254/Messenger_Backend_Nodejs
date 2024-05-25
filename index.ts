@@ -40,10 +40,11 @@ const mongooseConnect = async () => {
 
 const main = async () => {
   await mongooseConnect();
+
   // Access the MongoDB collection directly to pass it to `createAdapter()` & `Emitter()`
   const db = mongoose.connection.db;
-  // const messagesCollection = db.collection('messages');
-  const messagesCollection = db.collection('conversations');
+  const messagesCollection = db.collection('messages');
+  const conversationsCollection = db.collection('conversations');
 
   // Filter out all internal operations performed by Mongodb's adapter
   // TODO: Find a way to include message delete alerts but Not system delete alerts
@@ -62,7 +63,8 @@ const main = async () => {
   ];
 
   // Set up MongoDB change streams
-  const changeStream = Conversation.watch(pipeline);
+  const messagesChangeStream = Message.watch(pipeline);
+  const conversationsChangeStream = Conversation.watch(pipeline);
 
   // Set up MongoDB adapter for Socket.io => Enables the broadcasting of messages across multiple Socket.IO server instances using MongoDB as the message broker.
   io.adapter(
@@ -71,18 +73,33 @@ const main = async () => {
     })
   );
 
+  io.adapter(
+    createAdapter(conversationsCollection, {
+      addCreatedAtField: true,
+    })
+  );
+
   // Set up an emitter for broadcasting changes
-  const emitter = new Emitter(messagesCollection);
+  const messagesEmitter = new Emitter(messagesCollection);
+  const conversationsEmitter = new Emitter(conversationsCollection);
 
   // Listen for changes in the MongoDB collection
-  changeStream.on('change', (change) => {
+  messagesChangeStream.on('change', (change) => {
     // Listen for the `change` event emitted by the server
     // Extract the fullDocument from the change event document
     const { fullDocument } = change;
     console.log(fullDocument);
     // Emit the fullDocument to all connected clients
-    // emitter.emit('messageCreated', fullDocument);
-    emitter.emit('conversationCreated', fullDocument);
+    messagesEmitter.emit('messageCreated', fullDocument);
+  });
+
+  conversationsChangeStream.on('change', (change) => {
+    // Listen for the `change` event emitted by the server
+    // Extract the fullDocument from the change event document
+    const { fullDocument } = change;
+    console.log(fullDocument);
+    // Emit the fullDocument to all connected clients
+    conversationsEmitter.emit('conversationCreated', fullDocument);
   });
 
   io.on('connection', async (socket) => {
