@@ -42,7 +42,8 @@ const main = async () => {
   await mongooseConnect();
   // Access the MongoDB collection directly to pass it to `createAdapter()` & `Emitter()`
   const db = mongoose.connection.db;
-  const messagesCollection = db.collection('messages');
+  // const messagesCollection = db.collection('messages');
+  const messagesCollection = db.collection('conversations');
 
   // Filter out all internal operations performed by Mongodb's adapter
   // TODO: Find a way to include message delete alerts but Not system delete alerts
@@ -61,7 +62,7 @@ const main = async () => {
   ];
 
   // Set up MongoDB change streams
-  const changeStream = Message.watch(pipeline);
+  const changeStream = Conversation.watch(pipeline);
 
   // Set up MongoDB adapter for Socket.io => Enables the broadcasting of messages across multiple Socket.IO server instances using MongoDB as the message broker.
   io.adapter(
@@ -78,8 +79,10 @@ const main = async () => {
     // Listen for the `change` event emitted by the server
     // Extract the fullDocument from the change event document
     const { fullDocument } = change;
+    console.log(fullDocument);
     // Emit the fullDocument to all connected clients
-    emitter.emit('messageToRoom', fullDocument);
+    // emitter.emit('messageCreated', fullDocument);
+    emitter.emit('conversationCreated', fullDocument);
   });
 
   io.on('connection', async (socket) => {
@@ -100,23 +103,24 @@ const main = async () => {
       console.log(event, args);
     });
 
+    // TODO: Add a filter here to filter out documents with type: 2 or nsp: '/' (system delete)
     // Refetch and resend rooms to the frontend in the case of a disconnection.
-    if (!socket.recovered) {
-      try {
-        const conversationsWithMessages = await Conversation.find({})
-          .populate('messages')
-          .populate('members')
-          .sort({ _id: -1 })
-          .skip(socket.handshake.auth.serverOffset || 0)
-          .limit(10);
-        socket.emit('conversations', conversationsWithMessages);
-      } catch (error) {
-        console.error(
-          'Error fetching conversations for disconnected users',
-          error
-        );
-      }
-    }
+    // if (!socket.recovered) {
+    //   try {
+    //     const conversationsWithMessages = await Conversation.find({})
+    //       .populate('messages')
+    //       .populate('members')
+    //       .sort({ _id: -1 })
+    //       .skip(socket.handshake.auth.serverOffset || 0)
+    //       .limit(10);
+    //     socket.emit('conversations', conversationsWithMessages);
+    //   } catch (error) {
+    //     console.error(
+    //       'Error fetching conversations for disconnected users',
+    //       error
+    //     );
+    //   }
+    // }
 
     // Handle disconnection
     // Update the current user's online status
