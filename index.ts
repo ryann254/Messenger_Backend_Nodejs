@@ -6,9 +6,7 @@ import dotenv from 'dotenv';
 
 import app from './app';
 import mongoose from 'mongoose';
-import Message from './mongodb/models/message';
 import { queryConversations } from './services/conversation.service';
-import Conversation from './mongodb/models/conversation';
 
 dotenv.config();
 
@@ -41,10 +39,9 @@ const mongooseConnect = async () => {
 const main = async () => {
   await mongooseConnect();
 
-  // Access the MongoDB collection directly to pass it to `createAdapter()` & `Emitter()`
   const db = mongoose.connection.db;
-  const conversationsCollection = db.collection('conversations');
-  const messagesCollection = db.collection('messages');
+  // Use a generic/non-existent collection and pass it to `createAdapter()` & `Emitter()` to allow for tracking of changes in the entire database.
+  const socketIOGenericCollection = db.collection('socket.io-adapter');
 
   // Filter out all internal operations performed by Mongodb's adapter
   // TODO: Find a way to include message delete alerts but Not system delete alerts
@@ -63,43 +60,31 @@ const main = async () => {
   ];
 
   // Set up MongoDB change streams
-  const conversationsChangeStream = Conversation.watch(pipeline);
-  const messagesChangeStream = Message.watch(pipeline);
+  const dbChangeStream = db.watch(pipeline);
 
   // Set up MongoDB adapter for Socket.io => Enables the broadcasting of messages across multiple Socket.IO server instances using MongoDB as the message broker.
   io.adapter(
-    createAdapter(conversationsCollection, {
-      addCreatedAtField: true,
-    })
-  );
-
-  io.adapter(
-    createAdapter(messagesCollection, {
+    createAdapter(socketIOGenericCollection, {
       addCreatedAtField: true,
     })
   );
 
   // Set up an emitter for broadcasting changes
-  const conversationsEmitter = new Emitter(conversationsCollection);
-  const messagesEmitter = new Emitter(messagesCollection);
+  const socketIOEmitter = new Emitter(socketIOGenericCollection);
 
-  conversationsChangeStream.on('change', (change) => {
+  dbChangeStream.on('change', (change) => {
     // Listen for the `change` event emitted by the server
     // Extract the fullDocument from the change event document
-    const { fullDocument } = change;
-    console.log(fullDocument, 'conversation');
+    // @ts-ignore - fullDocument actually exists on the change event.
+    const { fullDocument, operationType } = change;
     // Emit the fullDocument to all connected clients
-    conversationsEmitter.emit('conversationCreated', fullDocument);
-  });
-
-  // Listen for changes in the MongoDB collection
-  messagesChangeStream.on('change', (change) => {
-    // Listen for the `change` event emitted by the server
-    // Extract the fullDocument from the change event document
-    const { fullDocument } = change;
-    console.log(fullDocument, 'message');
-    // Emit the fullDocument to all connected clients
-    messagesEmitter.emit('messageCreated', fullDocument);
+    if (operationType === 'insert') {
+      if (fullDocument.name) {
+        socketIOEmitter.emit('conversationCreated', fullDocument);
+      } else if (fullDocument.text) {
+        socketIOEmitter.emit('messageCreated', fullDocument);
+      }
+    }
   });
 
   io.on('connection', async (socket) => {
