@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 
 import app from './app';
 import mongoose from 'mongoose';
-import { queryConversations } from './services/conversation.service';
+import { queryConversationsWithMessages } from './services/conversation.service';
 
 dotenv.config();
 
@@ -94,7 +94,7 @@ const main = async () => {
 
     // Get all conversations with messages
     if (socket.handshake.auth.userId) {
-      const conversationsWithMessages = await queryConversations(
+      const conversationsWithMessages = await queryConversationsWithMessages(
         socket.handshake.auth.userId
       );
       socket.emit('conversations', conversationsWithMessages);

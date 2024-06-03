@@ -20,12 +20,21 @@ export const createConversation = async (
   });
 
 /**
+ * Get a conversation using the provided conversationId
+ * @param conversationId id belonging to a specific conversation
+ * @returns a conversation with the specified id
+ */
+export const getConversation = async (
+  conversationId: mongoose.Types.ObjectId
+): Promise<IConversationDoc | null> => Conversation.findById(conversationId);
+
+/**
  * Get a conversation that both users belong to
  * @param userA id of the first user
  * @param userB id of the second user
  * @returns a conversation that they both belong to
  */
-export const getConversation = async (
+export const getConversationWithUsers = async (
   userA: mongoose.Types.ObjectId,
   userB: mongoose.Types.ObjectId
 ): Promise<IConversationDoc | null> =>
@@ -43,7 +52,7 @@ export const getConversation = async (
  * @param user logged in user
  * @returns messages of the logged in user for every room where they are members
  */
-export const queryConversations = async (
+export const queryConversationsWithMessages = async (
   userId: string
 ): Promise<IConversationPopulated[]> =>
   Conversation.find({
