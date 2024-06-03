@@ -57,4 +57,6 @@ export const queryConversationsWithMessages = async (
 ): Promise<IConversationPopulated[]> =>
   Conversation.find({
     members: { $in: [new mongoose.Types.ObjectId(userId)] },
-  }).populate('messages');
+  })
+    .populate('messages')
+    .populate('members');
