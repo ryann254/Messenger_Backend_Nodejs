@@ -7,7 +7,6 @@ export const createConversationController = async (
   res: Response
 ) => {
   if (!req.body.user) throw new Error('User Not Found');
-
   const conversation = await createConversation(req.body.conversation);
   return res.status(httpStatus.CREATED).send(conversation);
 };

@@ -48,13 +48,4 @@ export const queryConversations = async (
 ): Promise<IConversationPopulated[]> =>
   Conversation.find({
     members: { $in: [new mongoose.Types.ObjectId(userId)] },
-  })
-    .populate('messages')
-    .populate({
-      path: 'members',
-      match: {
-        _id: {
-          $ne: new mongoose.Types.ObjectId(userId),
-        },
-      },
-    });
+  }).populate('messages');
