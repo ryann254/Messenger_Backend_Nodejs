@@ -55,8 +55,18 @@ export const getConversationWithUsers = async (
 export const queryConversationsWithMessages = async (
   userId: string
 ): Promise<IConversationPopulated[]> =>
-  Conversation.find({
-    members: { $in: [new mongoose.Types.ObjectId(userId)] },
-  })
-    .populate('messages')
-    .populate('members');
+  Conversation.find({}).populate('messages').populate('members');
+
+/**
+ * Update a conversation
+ * @param conversationId id belonging to a specific conversation
+ * @param conversationBody new conversation body
+ * @returns a conversation with the specified id
+ */
+export const updateConversation = async (
+  conversationId: string,
+  conversationBody: IConversation
+): Promise<IConversationDoc | null> =>
+  Conversation.findByIdAndUpdate(conversationId, conversationBody, {
+    new: true,
+  });
