@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import {
   createConversation,
-  getConversation,
   updateConversation,
 } from '../services/conversation.service';
 import httpStatus from 'http-status';
@@ -21,9 +20,12 @@ export const updateConversationController = async (
 ) => {
   const { conversationId } = req.params;
   const { conversation, user } = req.body;
+
   if (!user) throw new Error('User Not Found');
 
   if (conversationId) {
+    // Remove any duplicate ids from the conversation.members array
+    conversation.members = Array.from(new Set(conversation.members));
     const result = await updateConversation(conversationId, conversation);
     return res.status(httpStatus.OK).send(result);
   } else {

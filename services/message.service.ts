@@ -21,7 +21,7 @@ export const createMessage = async (
   // if (!conversationId) {
   //   conversation = await createConversation({
   //     name: user.name,
-  //     members: [user.id, recipientId] as Types.DocumentArray<Types.ObjectId>,
+  //     members: [user._id, recipientId] as Types.DocumentArray<Types.ObjectId>,
   //   });
   // }
 
@@ -31,7 +31,7 @@ export const createMessage = async (
   const message = await Message.create({
     ...params,
     conversation: conversationId,
-    sender: user.id,
+    sender: user._id,
   });
   conversation.messages?.push(message._id);
   await conversation.save();

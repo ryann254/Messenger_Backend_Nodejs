@@ -4,7 +4,6 @@ import Conversation, {
   IConversationDoc,
   IConversationPopulated,
 } from '../mongodb/models/conversation';
-import { IUserDoc } from '../mongodb/models/user';
 
 /**
  * Create a conversation
@@ -65,8 +64,9 @@ export const queryConversationsWithMessages = async (
  */
 export const updateConversation = async (
   conversationId: string,
-  conversationBody: IConversation
+  conversationBody: Partial<IConversationDoc>
 ): Promise<IConversationDoc | null> =>
-  Conversation.findByIdAndUpdate(conversationId, conversationBody, {
-    new: true,
+  Conversation.findByIdAndUpdate(conversationId, {
+    name: conversationBody.name,
+    members: conversationBody.members,
   });
