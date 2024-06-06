@@ -66,7 +66,15 @@ export const updateConversation = async (
   conversationId: string,
   conversationBody: Partial<IConversationDoc>
 ): Promise<IConversationDoc | null> =>
-  Conversation.findByIdAndUpdate(conversationId, {
-    name: conversationBody.name,
-    members: conversationBody.members,
-  });
+  Conversation.findByIdAndUpdate(
+    conversationId,
+    {
+      name: conversationBody.name,
+      members: conversationBody.members,
+    },
+    {
+      new: true,
+    }
+  )
+    .populate('messages')
+    .populate('members');

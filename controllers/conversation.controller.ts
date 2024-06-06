@@ -4,6 +4,7 @@ import {
   updateConversation,
 } from '../services/conversation.service';
 import httpStatus from 'http-status';
+import { updateUser } from '../services/user.service';
 
 export const createConversationController = async (
   req: Request,
@@ -26,6 +27,7 @@ export const updateConversationController = async (
   if (conversationId) {
     // Remove any duplicate ids from the conversation.members array
     conversation.members = Array.from(new Set(conversation.members));
+    await updateUser(user._id, user);
     const result = await updateConversation(conversationId, conversation);
     return res.status(httpStatus.OK).send(result);
   } else {
