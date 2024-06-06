@@ -80,6 +80,7 @@ const main = async () => {
     // Emit the fullDocument to all connected clients
     if (operationType === 'insert') {
       if (fullDocument.name) {
+        console.log(fullDocument);
         socketIOEmitter.emit('conversationCreated', fullDocument);
       } else if (fullDocument.text) {
         socketIOEmitter.emit('messageCreated', fullDocument);

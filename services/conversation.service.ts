@@ -15,6 +15,8 @@ export const createConversation = async (
 ): Promise<IConversationDoc | null> =>
   Conversation.create({
     name: conversationBody.name,
+    tag: conversationBody.tag,
+    description: conversationBody.description,
     members: conversationBody.members,
   });
 
@@ -25,7 +27,8 @@ export const createConversation = async (
  */
 export const getConversation = async (
   conversationId: mongoose.Types.ObjectId
-): Promise<IConversationDoc | null> => Conversation.findById(conversationId);
+): Promise<IConversationDoc | null> =>
+  Conversation.findById(conversationId).populate('members');
 
 /**
  * Get a conversation that both users belong to
@@ -70,6 +73,8 @@ export const updateConversation = async (
     conversationId,
     {
       name: conversationBody.name,
+      tag: conversationBody.tag,
+      description: conversationBody.description,
       members: conversationBody.members,
     },
     {

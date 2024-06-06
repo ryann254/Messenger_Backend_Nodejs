@@ -9,6 +9,16 @@ const ConversationSchema = new mongoose.Schema<IConversationDoc>({
     required: true,
     trim: true,
   },
+  tag: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   messages: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -29,6 +39,8 @@ const ConversationSchema = new mongoose.Schema<IConversationDoc>({
 
 export interface IConversation {
   name: string;
+  tag: string;
+  description: string;
   messages?: Types.DocumentArray<mongoose.Types.ObjectId>;
   members: Types.DocumentArray<mongoose.Types.ObjectId>;
 }

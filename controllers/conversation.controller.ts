@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import {
   createConversation,
+  getConversation,
   updateConversation,
 } from '../services/conversation.service';
 import httpStatus from 'http-status';
@@ -13,6 +14,15 @@ export const createConversationController = async (
   if (!req.body.user) throw new Error('User Not Found');
   const conversation = await createConversation(req.body.conversation);
   return res.status(httpStatus.CREATED).send(conversation);
+};
+
+export const getConversationController = async (
+  req: Request,
+  res: Response
+) => {
+  const { conversationId } = req.params;
+  const conversation = await getConversation(conversationId);
+  return res.status(httpStatus.OK).send(conversation);
 };
 
 export const updateConversationController = async (
