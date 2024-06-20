@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import app from './app';
 import mongoose from 'mongoose';
 import { queryConversationsWithMessages } from './services/conversation.service';
+import { updateUser } from './services/user.service';
 
 dotenv.config();
 
@@ -92,7 +93,9 @@ const main = async () => {
     // Broadcast that a user is online
     console.log('a user connected');
     // Update the current user's online status
-
+    await updateUser(socket.handshake.auth.userId, {
+      online: true,
+    });
     // Get all conversations with messages
     if (socket.handshake.auth.userId) {
       const conversationsWithMessages = await queryConversationsWithMessages(
@@ -127,8 +130,13 @@ const main = async () => {
 
     // Handle disconnection
     // Update the current user's online status
-    socket.on('disconnect', () => {
+
+    socket.on('disconnect', async () => {
       console.log('user disconnected');
+      // Update the current user's online status
+      await updateUser(socket.handshake.auth.userId, {
+        online: false,
+      });
     });
   });
 
