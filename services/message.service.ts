@@ -1,14 +1,18 @@
-import Message from '../mongodb/models/message';
-import {
-  createConversation,
-  getConversation,
-  getConversationWithUsers,
-} from './conversation.service';
+import mongoose from 'mongoose';
+import Message, { IMessage, IMessageDoc } from '../mongodb/models/message';
+import { getConversation } from './conversation.service';
+import { IUserDoc } from '../mongodb/models/user';
 
+/**
+ * Create a message
+ * @param {IMessage} messageBody
+ * @param {IUserDoc} user logged in user
+ * @returns {Promise<IMessageDoc>}
+ */
 export const createMessage = async (
   { recipientId, conversationId, ...params },
-  user
-) => {
+  user: IUserDoc
+): Promise<IMessageDoc> => {
   let conversation;
 
   if (conversationId) {
@@ -35,5 +39,32 @@ export const createMessage = async (
   });
   conversation.messages?.push(message._id);
   await conversation.save();
+  return message;
+};
+
+/**
+ * Get message by id
+ * @param {mongoose.Types.ObjectId} id
+ * @returns {Promise<IMessage | null>}
+ */
+export const getMessageById = (
+  messageId: mongoose.Types.ObjectId
+): Promise<IMessageDoc | null> => Message.findById(messageId);
+
+/**
+ * Update a message by id
+ * @param {mongoose.Types.ObjectId} messageId
+ * @param {Partial<IMessage>} messageBody
+ * @returns {Promise<IMessageDoc | null>}
+ */
+export const updateMessageById = async (
+  messageId: mongoose.Types.ObjectId,
+  messageBody: Partial<IMessage>
+): Promise<IMessageDoc | null> => {
+  const message = await getMessageById(messageId);
+  if (!message) throw new Error('Message not found');
+
+  Object.assign(message, messageBody);
+  await message.save();
   return message;
 };

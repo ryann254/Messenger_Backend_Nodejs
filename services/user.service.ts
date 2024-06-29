@@ -38,7 +38,6 @@ export const updateUser = async (
   userId: mongoose.Types.ObjectId,
   userBody: Partial<IUserDoc>
 ) => {
-  console.log(userBody);
   // Check if we are updating the whole user body or just a partial
   if (userBody.email) {
     if (await User.isEmailTaken(userBody.email, userId)) {

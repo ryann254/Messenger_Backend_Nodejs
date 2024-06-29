@@ -61,7 +61,9 @@ const main = async () => {
   ];
 
   // Set up MongoDB change streams
-  const dbChangeStream = db.watch(pipeline);
+  const dbChangeStream = db.watch(pipeline, {
+    fullDocument: 'updateLookup',
+  });
 
   // Set up MongoDB adapter for Socket.io => Enables the broadcasting of messages across multiple Socket.IO server instances using MongoDB as the message broker.
   io.adapter(
@@ -81,10 +83,17 @@ const main = async () => {
     // Emit the fullDocument to all connected clients
     if (operationType === 'insert') {
       if (fullDocument.name) {
-        console.log(fullDocument);
         socketIOEmitter.emit('conversationCreated', fullDocument);
       } else if (fullDocument.text) {
         socketIOEmitter.emit('messageCreated', fullDocument);
+      }
+    }
+
+    if (operationType === 'update') {
+      if (fullDocument?.name) {
+        socketIOEmitter.emit('conversationUpdated', fullDocument);
+      } else if (fullDocument?.text) {
+        socketIOEmitter.emit('messageUpdated', fullDocument);
       }
     }
   });
