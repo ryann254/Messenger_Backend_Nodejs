@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
-import Message, { IMessage, IMessageDoc } from '../mongodb/models/message';
+import Message, {
+  IMessage,
+  IMessageDoc,
+  MessageData,
+} from '../mongodb/models/message';
 import { getConversation } from './conversation.service';
 import { IUserDoc } from '../mongodb/models/user';
 
@@ -10,7 +14,7 @@ import { IUserDoc } from '../mongodb/models/user';
  * @returns {Promise<IMessageDoc>}
  */
 export const createMessage = async (
-  { recipientId, conversationId, ...params },
+  { recipientId, conversationId, ...params }: MessageData,
   user: IUserDoc
 ): Promise<IMessageDoc> => {
   let conversation;
@@ -59,7 +63,7 @@ export const getMessageById = (
  */
 export const updateMessageById = async (
   messageId: mongoose.Types.ObjectId,
-  messageBody: Partial<IMessage>
+  messageBody: MessageData
 ): Promise<IMessageDoc | null> => {
   const message = await getMessageById(messageId);
   if (!message) throw new Error('Message not found');

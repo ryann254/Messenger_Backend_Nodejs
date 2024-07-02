@@ -55,7 +55,7 @@ export const getConversationWithUsers = async (
  * @returns messages of the logged in user for every room where they are members
  */
 export const queryConversationsWithMessages = async (
-  userId: string
+  userId: mongoose.Types.ObjectId
 ): Promise<IConversationPopulated[]> =>
   Conversation.find({}).populate('messages').populate('members');
 
@@ -66,8 +66,8 @@ export const queryConversationsWithMessages = async (
  * @returns a conversation with the specified id
  */
 export const updateConversation = async (
-  conversationId: string,
-  conversationBody: Partial<IConversationDoc>
+  conversationId: mongoose.Types.ObjectId,
+  conversationBody: IConversation
 ): Promise<IConversationDoc | null> =>
   Conversation.findByIdAndUpdate(
     conversationId,

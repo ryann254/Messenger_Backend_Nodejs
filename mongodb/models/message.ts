@@ -38,6 +38,15 @@ export interface IMessage {
   conversation: mongoose.Schema.Types.ObjectId;
 }
 
+export interface MessageData {
+  sender: string;
+  recipientId: mongoose.Types.ObjectId;
+  recipientName: string;
+  conversationId: mongoose.Types.ObjectId;
+  text: string;
+  sent: boolean;
+}
+
 export interface IMessageDoc extends IMessage, Document {}
 
 const Message = mongoose.model<IMessageDoc>('Message', MessageSchema);
