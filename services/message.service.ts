@@ -72,3 +72,23 @@ export const updateMessageById = async (
   await message.save();
   return message;
 };
+
+/**
+ * Delete a message by id
+ * @param {mongoose.Types.ObjectId} messageId
+ * @param {mongoose.Types.ObjectId} conversationId
+ */
+export const deleteMessage = async (
+  messageId: mongoose.Types.ObjectId,
+  conversationId: mongoose.Types.ObjectId
+) => {
+  const message = await getMessageById(messageId);
+  const conversation = await getConversation(conversationId);
+
+  if (!message) throw new Error('Message not found');
+  if (!conversation) throw new Error('Conversation not found');
+
+  conversation.messages?.pull(messageId);
+  await conversation.save();
+  message.remove();
+};
